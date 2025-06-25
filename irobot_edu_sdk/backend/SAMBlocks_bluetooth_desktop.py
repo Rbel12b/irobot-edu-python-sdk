@@ -7,7 +7,7 @@ It is compatible with CPython on macOS, Windows, and Linux using the Bleak libra
 from asyncio import sleep, Lock
 from typing import Optional
 from bleak import BleakClient, BleakScanner
-from .SAMBlocks_backend import Backend
+from .SAMBlocks_backend import Backend, SAM_BLOCK_TYPE
 
 
 class Bluetooth(Backend):
@@ -26,9 +26,10 @@ class Bluetooth(Backend):
         self._client: Optional[BleakClient] = None
         self._txlock = Lock()
         self._sensor_value = 0
+        self.previous_sensor_value = 0
         self._battery_level = 0
 
-    def sensor_read_handler(self, characteristic, data):
+    async def sensor_read_handler(self, characteristic, data):
         msg = bytes(data)
         
         if len(msg) != 1:
@@ -36,6 +37,20 @@ class Bluetooth(Backend):
             return
         
         self._sensor_value = msg[0]
+
+        if self.get_block_type() == SAM_BLOCK_TYPE.BUTTON:
+            if self._sensor_value == 0 and self.previous_sensor_value != 0:
+                # Button released
+                self.button_release_event.set()
+                self.button_release_event.clear()
+                await self._emit(self._on_button_release_handlers)
+            elif self._sensor_value != 0 and self.previous_sensor_value == 0:
+                # Button pressed
+                self.button_pressed_event.set()
+                self.button_pressed_event.clear()
+                await self._emit(self._on_button_press_handlers)
+
+        self.previous_sensor_value = self._sensor_value
 
     def battery_read_handler(self, characteristic, data):
         msg = bytes(data)
@@ -98,3 +113,8 @@ class Bluetooth(Backend):
     
     def get_battery(self) -> int:
         return (self._battery_level / 255) * 100
+    
+    def get_block_name(self) -> str:
+        if self._device:
+            return self._device.name or "Unknown SAM Block"
+        return "Unknown SAM Block"

@@ -1,4 +1,4 @@
-from .backend.SAMBlocks_backend import Backend
+from .backend.SAMBlocks_backend import Backend, SAM_BLOCK_TYPE
 
 class SAMBlock:
     def __init__(self, backend: Backend):
@@ -51,3 +51,35 @@ class SAMBlock:
     
     def get_battery_level(self) -> int:
         return self.backend.get_battery()
+    
+    def on_button_press(self, handler):
+        """Register a handler for button press events.
+        The handler will block other events until it returns.
+        Handlers are executed in the order they are registered."""
+        self.backend.on_button_press(handler)
+
+    def on_button_release(self, handler):
+        """Register a handler for button release events.
+        The handler will block other events until it returns.
+        Handlers are executed in the order they are registered."""
+        self.backend.on_button_release(handler)
+
+    def get_block_name(self) -> str:
+        """Get the name of the block."""
+        return self.backend.get_block_name()
+    
+    def get_block_type(self) -> SAM_BLOCK_TYPE:
+        """Get the type of the block."""
+        return self.backend.get_block_type()
+
+    def wait_for_button_press(self):
+        """Wait for a button press event."""
+        if self.get_block_type() != SAM_BLOCK_TYPE.BUTTON:
+            raise ValueError("This method is only available for button blocks.")
+        return self.backend.button_pressed_event.wait()
+    
+    def wait_for_button_release(self):
+        """Wait for a button release event."""
+        if self.get_block_type() != SAM_BLOCK_TYPE.BUTTON:
+            raise ValueError("This method is only available for button blocks.")
+        return self.backend.button_release_event.wait()
