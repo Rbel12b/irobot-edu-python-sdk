@@ -3,14 +3,14 @@
     "configurations": [
         {
             "name": "Python: Current File",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal"
         },
         {
             "name": "Python: debug.py",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "debug.py",
             "console": "integratedTerminal"
