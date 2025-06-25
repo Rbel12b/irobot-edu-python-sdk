@@ -4,7 +4,7 @@ This is a Bluetooth Low Energy class that implements the Backend interface metho
 It is compatible with CPython on macOS, Windows, and Linux using the Bleak library.
 """
 
-from asyncio import sleep, Lock
+from asyncio import Lock
 from typing import Optional
 from bleak import BleakClient, BleakScanner
 from .SAMBlocks_backend import Backend, SAM_BLOCK_TYPE
@@ -88,7 +88,6 @@ class Bluetooth(Backend):
         if await self._client.connect():
             await self._client.start_notify(self.BATTERY_LEVEL_CHAR, self.battery_read_handler)
             await self._client.start_notify(self.SAM_BLOCKS_SENSOR_CHAR, self.sensor_read_handler)            
-
 
     async def is_connected(self) -> bool:
         return self._client.is_connected if self._client else False

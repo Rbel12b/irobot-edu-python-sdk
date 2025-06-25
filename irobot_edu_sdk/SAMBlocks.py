@@ -43,7 +43,7 @@ class SAMBlock:
     async def write_servo(self, angle: int):
         if angle < 0 or angle > 180:
             raise ValueError("Angle must be between 0 and 180")
-        msg = bytes([angle, 0, 0])
+        msg = bytes([int(angle * (255 / 180)), 0, 0]) # Scale angle to 0-255
         await self.backend.write_actor(msg)
 
     def get_sensor_value(self) -> int:
